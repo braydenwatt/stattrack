@@ -1,0 +1,143 @@
+name: Build and Publish
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*' # Trigger on version tags like v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Read gradle.properties
+        id: read_properties
+        shell: bash
+        run: |
+          # Keys we want to export
+          keys=(minecraft_version yarn_mappings loader_version mod_version maven_group archives_base_name fabric_version modmenu_version)
+
+          # Ensure file exists
+          if [ ! -f gradle.properties ]; then
+            echo "gradle.properties not found"
+            exit 1
+          fi
+
+          # Read file line-by-line, skip comments and empty lines
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Trim leading/trailing whitespace
+            trimmed="$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            # Skip comments and empty lines
+            if [[ -z "$trimmed" || "$trimmed" =~ ^# ]]; then
+              continue
+            fi
+            # Only split on first '=' to allow '=' in value
+            if [[ "$trimmed" != *=* ]]; then
+              continue
+            fi
+            key="${trimmed%%=*}"
+            val="${trimmed#*=}"
+            key="$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            val="$(echo "$val" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+            for k in "${keys[@]}"; do
+              if [[ "$key" == "$k" ]]; then
+                # Write output so it becomes steps.read_properties.outputs.<key>
+                echo "${k}=${val}" >> "$GITHUB_OUTPUT"
+              fi
+            done
+          done < gradle.properties
+
+      - name: Use extracted properties
+        run: |
+          echo "minecraft_version: ${{ steps.read_properties.outputs.minecraft_version }}"
+          echo "yarn_mappings: ${{ steps.read_properties.outputs.yarn_mappings }}"
+          echo "loader_version: ${{ steps.read_properties.outputs.loader_version }}"
+          echo "Mod Version: ${{ steps.read_properties.outputs.mod_version }}"
+          echo "maven_group: ${{ steps.read_properties.outputs.maven_group }}"
+          echo "archives_base_name: ${{ steps.read_properties.outputs.archives_base_name }}"
+          echo "fabric_version: ${{ steps.read_properties.outputs.fabric_version }}"
+          echo "modmenu_version: ${{ steps.read_properties.outputs.modmenu_version }}"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          
+      - name: Confirm Java Version
+        run: java -version
+
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=${{ env.JAVA_HOME_21_X64 }}" >> $GITHUB_ENV
+      
+      - name: Make Gradle Wrapper Executable
+        if: runner.os != 'Windows'
+        run: chmod +x ./gradlew
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: ./gradlew clean build
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat clean build
+
+      - name: Publish (Modrinth)
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          #curseforge-id: itemlore
+          #curseforge-token: "${{ secrets.PUBLISH_CURSEFORGE_TOKEN }}"
+          modrinth-id: itemlore
+          modrinth-token: "${{ secrets.PUBLISH_MODRINTH_TOKEN }}"
+          #github-tag: "v${{ steps.read_properties.outputs.mod_version }}"
+          #github-token: "${{ secrets.GITHUB_TOKEN }}"
+          name: "v${{ steps.read_properties.outputs.mod_version }}"
+          version: "${{ steps.read_properties.outputs.mod_version }}"
+          version-type: release
+          changelog-file: CHANGELOG.md
+          loaders: fabric
+          game-versions: "${{ steps.read_properties.outputs.minecraft_version }}"
+          java: "21"
+
+      - name: Publish (GitHub)
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          #curseforge-id: itemlore
+          #curseforge-token: "${{ secrets.PUBLISH_CURSEFORGE_TOKEN }}"
+          #modrinth-id: itemlore
+          #modrinth-token: "${{ secrets.PUBLISH_MODRINTH_TOKEN }}"
+          github-tag: "v${{ steps.read_properties.outputs.mod_version }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          name: "v${{ steps.read_properties.outputs.mod_version }}"
+          version: "${{ steps.read_properties.outputs.mod_version }}"
+          version-type: release
+          changelog-file: CHANGELOG.md
+          loaders: fabric
+          game-versions: "${{ steps.read_properties.outputs.minecraft_version }}"
+          java: "21"
+
+      - name: Publish (CurseForge)
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          curseforge-id: itemlore
+          curseforge-token: "${{ secrets.PUBLISH_CURSEFORGE_TOKEN }}"
+          name: "${{ steps.read_properties.outputs.archives_base_name }} v${{ steps.read_properties.outputs.minecraft_version}}"
+          version: "${{ steps.read_properties.outputs.mod_version }}"
+          version-type: release
+          changelog-file: CHANGELOG.md
+          loaders: fabric
+          game-versions: "${{ steps.read_properties.outputs.minecraft_version }}"
+          java: "21"
