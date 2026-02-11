@@ -1,25 +1,24 @@
 {
 	"schemaVersion": 1,
-	"id": "itemlore",
+	"id": "stattrack",
 	"version": "${version}",
-	"name": "ItemLore",
-	"description": "Adds Date and Time, as well as UID in the NBT Lore tag of anvilled items",
+	"name": "StatTrack",
+	"description": "Adds StatTrack inspired by Monumenta MMO to Minecraft",
 	"authors": [
-		"quantumaidan"
+		"arco23"
 	],
 	"contact": {
-		"homepage": "https://github.com/aidanfoss/itemlore",
-		"sources": "https://github.com/aidanfoss/itemlore"
+
 	},
 	"license": "MIT License",
-	"icon": "assets/itemlore/icon.png",
+	"icon": "",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.quantumaidan.itemLore.ItemLore"
+			"com.arco.stattrack.ItemLore"
 		],
 		"client": [
-			"net.quantumaidan.itemLore.ItemLoreClient"
+			"com.arco.stattrack.ItemLoreClient"
 		],
 		"server": [],
 		"fabric-datagen": [],
@@ -27,23 +26,22 @@
 		"preLaunch": []
 	},
 	"mixins": [
-		"itemlore.mixins.json"
+		"stattrack.mixins.json"
 	],
 	"custom": {
 		"mixin": {
-			"config": "itemlore.mixins.json",
-			"refmap": "itemlore-refmap.json",
+			"config": "stattrack.mixins.json",
+			"refmap": "stattrack-refmap.json",
 			"debug": true
 		}
 	},
 	"depends": {
-		"fabricloader": ">=0.16.9",
+		"fabricloader": ">=0.18.2",
 		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": "*",
 		"midnightlib": "*"
 	},
 	"suggests": {
-		"modmenu": "*"
 	}
 }

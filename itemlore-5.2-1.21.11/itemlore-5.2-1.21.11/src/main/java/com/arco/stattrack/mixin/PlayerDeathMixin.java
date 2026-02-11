@@ -1,6 +1,6 @@
 package com.arco.stattrack.mixin;
 
-import net.quantumaidan.itemLore.util.statTrackLore;
+import com.arco.stattrack.util.statTrackLore;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.quantumaidan.itemLore.ItemLore;
+import com.arco.stattrack.ItemLore;
 
 @Mixin(ServerPlayer.class)
 public class PlayerDeathMixin {

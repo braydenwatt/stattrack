@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.quantumaidan.itemLore.ItemLore;
-import net.quantumaidan.itemLore.util.statTrackLore;
+import com.arco.stattrack.ItemLore;
+import com.arco.stattrack.util.statTrackLore;
 
 @Mixin(LivingEntity.class)
 public class EntityDeathMixin {

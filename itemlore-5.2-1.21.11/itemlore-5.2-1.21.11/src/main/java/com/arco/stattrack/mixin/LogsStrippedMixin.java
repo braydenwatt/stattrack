@@ -5,9 +5,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.quantumaidan.itemLore.config.itemLoreConfig;
-import net.quantumaidan.itemLore.util.setLore;
-import net.quantumaidan.itemLore.util.statTrackLore;
+import com.arco.stattrack.util.setLore;
+import com.arco.stattrack.util.statTrackLore;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,9 +23,8 @@ public class LogsStrippedMixin {
         if (!result.consumesAction()) return;
 
         ItemStack inHand = context.getItemInHand();
-        if (itemLoreConfig.forceLoreMode != itemLoreConfig.ForceLoreMode.OFF) {
-            setLore.applyNewLore(player, inHand);
-        }
+
+        setLore.applyNewLore(player, inHand);
 
         statTrackLore.onLogStripped(player, inHand);
     }
